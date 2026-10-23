@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "com.detectivestudios.hitboxplus.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "hitboxplus.refmap.json",
+  "mixins": ["ProjectileUtilMixin", "SynchedEntityDataMixin"],
+  "client": ["EntityRenderDispatcherMixin"],
+  "injectors": {"defaultRequire": 1}
+}

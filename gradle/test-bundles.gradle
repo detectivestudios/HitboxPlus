@@ -1,0 +1,123 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+
+def testProjectRoot = project.projectDir.name == 'buildSrc' ? project.projectDir.parentFile : project.projectDir
+def sourceRoots = ['src/test', 'buildSrc/src/test', 'tools/blockbench/test', 'tools/web-editor/test']
+def manifestFile = new File(testProjectRoot, 'test-sources-manifest.json')
+def relativePath = { File input -> testProjectRoot.toPath().relativize(input.toPath()).toString().replace('\\', '/') }
+def content = { File input ->
+    byte[] bytes = input.bytes
+    if (input.name ==~ /.*\.(java|gradle|properties|json|toml|mcmeta|xml|cjs|js|html|css|md|txt|cmd|bat)$/) {
+        bytes = new String(bytes, 'UTF-8').replace('\r\n', '\n').replace('\r', '\n').getBytes('UTF-8')
+    }
+    bytes
+}
+def sourceFiles = {
+    sourceRoots.collectMany { directory -> project.fileTree(new File(testProjectRoot, directory)).files as List }
+            .findAll { it.isFile() }.sort { relativePath(it) }
+}
+def projectFiles = {
+    def trees = ['src/main', 'src/generated', 'buildSrc/src/main', 'gradle', 'tools/testing'].collect {
+        project.fileTree(new File(testProjectRoot, it))
+    }
+    ['tools/blockbench', 'tools/web-editor'].each { directory ->
+        trees.add(project.fileTree(new File(testProjectRoot, directory)) {
+            exclude 'test/**', 'dist/**'
+        })
+    }
+    def files = trees.collectMany { it.files as List }
+    files.addAll(['build.gradle', 'buildSrc/build.gradle', 'buildSrc/settings.gradle', 'settings.gradle',
+                  'gradle.properties', 'gradlew', 'gradlew.bat', 'runEditor.cmd', 'runTests.cmd'].collect {
+        new File(testProjectRoot, it)
+    })
+    files.findAll { it.isFile() }.unique().sort { relativePath(it) }
+}
+def projectFingerprint = {
+    def digest = MessageDigest.getInstance('SHA-256')
+    projectFiles().each { input ->
+        digest.update(relativePath(input).getBytes('UTF-8'))
+        digest.update((byte) 0)
+        digest.update(content(input))
+        digest.update((byte) 0)
+    }
+    digest.digest().encodeHex().toString()
+}
+def sourceHashes = {
+    sourceFiles().collectEntries { input ->
+        [(relativePath(input)): MessageDigest.getInstance('SHA-256').digest(content(input)).encodeHex().toString()]
+    }
+}
+def gitRevision = {
+    def command = project.providers.exec {
+        workingDir testProjectRoot
+        commandLine 'git', 'rev-parse', 'HEAD'
+        ignoreExitValue = true
+    }
+    command.result.get().exitValue == 0 ? command.standardOutput.asText.get().trim() : null
+}
+def snapshot = { String mode ->
+    def fingerprint = projectFingerprint()
+    def revision = gitRevision()
+    [schemaVersion: 1, project: 'hitboxplus', mode: mode,
+     projectRevision: revision ?: "src.${fingerprint.substring(0, 12)}",
+     gitRevision: revision, projectFingerprint: fingerprint, sources: sourceHashes()]
+}
+
+ext.testSourceRoots = sourceRoots
+ext.testSourcesIncluded = { !sourceFiles().isEmpty() }
+ext.testSourceBundleSnapshot = snapshot
+ext.useLocalTestSourcesRequested = {
+    def invocation = gradle
+    while (invocation != null) {
+        if (invocation.startParameter.taskNames.any { it.tokenize(':').last() == 'useLocalTestSources' }) {
+            return true
+        }
+        invocation = invocation.parent
+    }
+    false
+}
+ext.verifyTestSourceBundle = {
+    if (!testSourcesIncluded() || useLocalTestSourcesRequested()) {
+        return
+    }
+    if (!manifestFile.isFile()) {
+        throw new GradleException('Test sources have no compatibility manifest. Import a current versioned '
+                + 'test-source ZIP, or run useLocalTestSources if these are your locally maintained tests. '
+                + 'See docs/testing.md.')
+    }
+    def manifest = new JsonSlurper().parse(manifestFile, 'UTF-8')
+    if (manifest.schemaVersion != 1 || manifest.project != 'hitboxplus') {
+        throw new GradleException('Unsupported test-source manifest. Import a current test-source ZIP.')
+    }
+    if (manifest.mode == 'local') {
+        logger.info('Using locally maintained test sources; imported-bundle compatibility is not enforced.')
+        return
+    }
+    if (manifest.mode != 'bundle') {
+        throw new GradleException('Unknown test-source manifest mode. Import a current test-source ZIP.')
+    }
+    if (!(manifest.sources instanceof Map)) {
+        throw new GradleException('Test-source bundle has no valid file checksums. Reimport a current ZIP.')
+    }
+    def fingerprint = projectFingerprint()
+    def revision = gitRevision()
+    if (manifest.projectFingerprint != fingerprint
+            || (manifest.gitRevision && revision && manifest.gitRevision != revision)) {
+        throw new GradleException('Test-source bundle is for a different project revision: '
+                + manifest.projectRevision + '. Import the matching versioned ZIP. '
+                + 'Do not switch to local mode just to bypass an outdated bundle.')
+    }
+    def hashes = sourceHashes()
+    if (manifest.sources != hashes) {
+        def changed = ((manifest.sources.keySet() + hashes.keySet()) as Set).findAll {
+            manifest.sources[it] != hashes[it]
+        }.sort()
+        throw new GradleException('Test-source bundle files were changed, added or removed: '
+                + changed.take(8).join(', ') + '. Reimport the matching ZIP, or explicitly '
+                + 'useLocalTestSources before maintaining the tests yourself.')
+    }
+}
+ext.writeLocalTestSourceManifest = {
+    manifestFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(snapshot('local'))) + '\n', 'UTF-8')
+}

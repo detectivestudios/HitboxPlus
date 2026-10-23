@@ -1,0 +1,439 @@
+import com.detectivestudios.hitboxplus.formatting.JavaFormatting
+import com.diffplug.spotless.LineEnding
+import com.github.gradle.node.task.NodeTask
+import groovy.json.JsonOutput
+import net.minecraftforge.gradle.common.util.runs.RunConfigGenerator
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:6.0.54'
+        classpath 'org.spongepowered:mixingradle:0.7.38'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'com.diffplug.spotless' version '8.10.1'
+    id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+
+group = 'com.detectivestudios.hitboxplus'
+apply from: 'gradle/versioning.gradle'
+apply from: 'gradle/test-bundles.gradle'
+
+base { archivesName = 'hitboxplus' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft { mappings channel: 'official', version: minecraft_version }
+sourceSets.main.resources.srcDir 'src/generated/resources'
+sourceSets {
+    networkTest {
+        java.setSrcDirs(['src/test/network/java'])
+        resources.setSrcDirs(['src/test/network/resources'])
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content { includeGroup 'software.bernie.geckolib' }
+    }
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+java { withSourcesJar() }
+
+node {
+    download = true
+    version = node_version
+}
+
+def javaLicenseHeader = '/*\n' + file('HEADER.txt').getText('UTF-8')
+        .replace('\r\n', '\n').trim().replace('${year}', '$YEAR').readLines()
+        .collect { line -> line.isEmpty() ? ' *' : " * ${line}" }.join('\n') + '\n */\n\n'
+
+spotless {
+    java {
+        target 'src/**/*.java', 'buildSrc/src/**/*.java'
+        targetExclude 'src/generated/**', 'buildSrc/src/generated/**'
+        encoding 'UTF-8'
+        lineEndings = LineEnding.UNIX
+        licenseHeader(javaLicenseHeader)
+        googleJavaFormat(google_java_format_version).reorderImports(true)
+        removeUnusedImports()
+        custom 'projectJavaRules', { source -> JavaFormatting.format(source) }
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    inputs.property 'mod_version', project.version.toString()
+    filteringCharset = 'UTF-8'
+    filesMatching('META-INF/mods.toml') {
+        expand mod_version: project.version.toString()
+    }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation "org.spongepowered:mixin:${mixin_version}"
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    testAnnotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    testImplementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+    testImplementation files(sourceSets.main.output)
+}
+
+test {
+    useJUnitPlatform()
+    onlyIf('Java test sources are included') { !sourceSets.test.java.isEmpty() }
+    dependsOn 'testWebEditor'
+    def editorFixture = file('build/validation/studio-animated-profile.json')
+    def geometryFixture = file('tools/web-editor/test/fixtures/asymmetric.geo.json')
+    inputs.files editorFixture, geometryFixture
+    systemProperty 'hitboxplus.editorFixture', editorFixture.absolutePath
+    systemProperty 'hitboxplus.geometryFixture', geometryFixture.absolutePath
+}
+sourceSets.test.resources.srcDir 'tools/blockbench/catalog'
+mixin { add sourceSets.main, 'hitboxplus.refmap.json' }
+
+tasks.named('compileJava') {
+    outputs.file(layout.buildDirectory.file('tmp/compileJava/hitboxplus.refmap.json'))
+}
+
+jar {
+    from file('LICENSE.txt')
+    finalizedBy 'reobfJar'
+    manifest {
+        attributes 'MixinConfigs': 'hitboxplus.mixins.json',
+                'Implementation-Title': 'Hitbox+ by DetectiveStudios',
+                'Implementation-Version': project.version.toString(),
+                'Implementation-Vendor': 'DetectiveStudios'
+    }
+}
+
+def blockbenchTests = fileTree('tools/blockbench/test') { include '**/*.test.cjs' }
+
+tasks.register('testBlockbenchPlugin', NodeTask) {
+    def testScripts = blockbenchTests.files.sort()
+    group = 'verification'
+    description = 'Checks profile round trips, coordinate conversion and safe Java export.'
+    options = ['--test']
+    script = testScripts ? testScripts.first() : file('tools/blockbench/test/authoring.test.cjs')
+    args = testScripts.drop(1).collect { it.absolutePath }
+    onlyIf('Blockbench test sources are included') { !blockbenchTests.isEmpty() }
+    inputs.dir file('tools/blockbench/src')
+    inputs.files fileTree('tools/blockbench/test')
+    inputs.file file('tools/blockbench/catalog/vanilla-1.18.2.json')
+}
+
+tasks.register('bundleBlockbenchPlugin', NodeTask) {
+    group = 'build'
+    description = 'Builds the installable Hitbox+ Blockbench plugin.'
+    script = file('tools/blockbench/build.cjs')
+    inputs.dir file('tools/blockbench/src')
+    inputs.file file('tools/blockbench/build.cjs')
+    inputs.file file('tools/blockbench/catalog/vanilla-1.18.2.json')
+    inputs.file file('HEADER.txt')
+    inputs.file file('LICENSE.txt')
+    outputs.file file('tools/blockbench/dist/hitboxplus.js')
+    outputs.file file('tools/blockbench/dist/LICENSE.txt')
+}
+
+tasks.named('check') { dependsOn tasks.named('testBlockbenchPlugin') }
+tasks.named('assemble') { dependsOn tasks.named('bundleBlockbenchPlugin') }
+
+def webEditorTests = fileTree('tools/web-editor/test') { include '**/*.test.cjs' }
+
+tasks.register('testWebEditor', NodeTask) {
+    def testScripts = webEditorTests.files.sort()
+    group = 'verification'
+    description = 'Checks model/animation import and installable datapack exports.'
+    options = ['--test']
+    script = testScripts ? testScripts.first() : file('tools/web-editor/test/model.test.cjs')
+    args = testScripts.drop(1).collect { it.absolutePath }
+    onlyIf('Web editor test sources are included') { !webEditorTests.isEmpty() }
+    inputs.file file('tools/web-editor/model.cjs')
+    inputs.file file('tools/web-editor/server.cjs')
+    inputs.files fileTree('tools/web-editor/test')
+    inputs.file file('tools/blockbench/src/authoring.cjs')
+}
+
+tasks.register('bundleWebEditor', NodeTask) {
+    group = 'build'
+    description = 'Builds the offline Hitbox+ Studio browser editor.'
+    script = file('tools/web-editor/build.cjs')
+    inputs.files file('tools/web-editor/index.html'), file('tools/web-editor/style.css'),
+            file('tools/web-editor/app.js'), file('tools/web-editor/model.cjs'),
+            file('tools/web-editor/build.cjs'), file('tools/blockbench/src/authoring.cjs'),
+            file('tools/blockbench/catalog/vanilla-1.18.2.json'), file('LICENSE.txt')
+    inputs.dir file('tools/web-editor/vendor')
+    inputs.dir file('tools/web-editor/assets')
+    outputs.dir file('tools/web-editor/dist')
+}
+
+tasks.register('runEditor', NodeTask) {
+    group = 'ForgeGradle runs'
+    description = 'Builds and opens Hitbox+ Studio using the project-managed Node.js runtime.'
+    dependsOn tasks.named('bundleWebEditor')
+    script = file('tools/web-editor/server.cjs')
+    args = ['--open', '--port', providers.gradleProperty('editorPort').getOrElse('8787')]
+}
+
+tasks.register('editorZip', Zip) {
+    group = 'distribution'
+    description = 'Packages Hitbox+ Studio for local use or static hosting.'
+    dependsOn tasks.named('bundleWebEditor')
+    archiveFileName = 'hitboxplus-studio.zip'
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    from('tools/web-editor/dist') {
+        into 'dist'
+        exclude 'hitboxplus-studio.html'
+    }
+    from('tools/web-editor/dist') { include 'hitboxplus-studio.html' }
+    from('tools/web-editor') { include 'server.cjs', 'start-editor.cmd', 'README.md', 'THIRD-PARTY.txt' }
+    from file('LICENSE.txt')
+}
+
+tasks.named('check') { dependsOn tasks.named('testWebEditor') }
+tasks.named('assemble') { dependsOn tasks.named('editorZip') }
+
+minecraft {
+    runs {
+        configureEach {
+            args '--mixin', 'hitboxplus.mixins.json'
+            mods {
+                hitboxplus { source sourceSets.main }
+            }
+        }
+        client {
+            taskName 'runHitboxPlusClient'
+            workingDirectory project.file('run/client')
+        }
+        server {
+            taskName 'runHitboxPlusServer'
+            workingDirectory project.file('run/server')
+        }
+        gameTestServer {
+            taskName 'runHitboxPlusGameTestServer'
+            workingDirectory project.file('run/gametest')
+            property 'forge.enabledGameTestNamespaces', 'hitboxplus'
+            mods {
+                hitboxplus { source sourceSets.test }
+            }
+        }
+        testNetworkServer {
+            parent minecraft.runs.server
+            taskName 'runHitboxPlusNetworkTestServer'
+            workingDirectory project.file('build/tmp/network-tests/server')
+            args '--nogui'
+            jvmArgs '-Xms256m', '-Xmx1536m'
+            mods { hitboxplus_network_tests { source sourceSets.networkTest } }
+        }
+        testNetworkClient {
+            parent minecraft.runs.client
+            taskName 'runHitboxPlusNetworkTestClient'
+            workingDirectory project.file('build/tmp/network-tests/client')
+            args '--username', 'HitboxNetTest', '--width', '320', '--height', '240'
+            jvmArgs '-Xms256m', '-Xmx2048m'
+            mods { hitboxplus_network_tests { source sourceSets.networkTest } }
+        }
+    }
+}
+
+publishing {
+    publications {
+        create('mavenJava', MavenPublication) { MavenPublication publication ->
+            publication.artifactId = 'hitboxplus'
+            publication.artifact(tasks.named('jar'))
+            publication.artifact(tasks.named('sourcesJar'))
+        }
+    }
+}
+
+tasks.withType(PublishToMavenLocal).configureEach { dependsOn 'reobfJar' }
+tasks.withType(PublishToMavenRepository).configureEach { dependsOn 'reobfJar' }
+
+def requireTestSources = {
+    def required = ['src/test/java', 'src/test/resources', 'buildSrc/src/test/java',
+            'tools/blockbench/test/authoring.test.cjs', 'tools/web-editor/test/model.test.cjs',
+            'tools/web-editor/test/server.test.cjs', 'tools/web-editor/test/browser-smoke.cjs',
+            'tools/web-editor/test/fixtures/asymmetric.geo.json',
+            'src/test/network/java', 'src/test/network/resources/META-INF/mods.toml',
+            'src/test/network/resources/network-profiles/login.json',
+            'src/test/network/resources/network-profiles/reloaded.json',
+            'src/test/network/resources/network-profiles/reconnected.json']
+    def missing = required.findAll { !file(it).exists() }
+    if (!missing.isEmpty()) {
+        throw new GradleException('Full testing requires the optional local test sources. Missing: '
+                + missing.join(', ') + '. Extract the matching versioned test-source ZIP into the project root. '
+                + 'Use build to create artifacts without tests. See docs/testing.md.')
+    }
+}
+
+tasks.register('useLocalTestSources') {
+    group = 'verification'
+    description = 'Explicitly marks these test sources as locally maintained rather than an imported bundle.'
+    doLast {
+        if (!testSourcesIncluded()) {
+            throw new GradleException('No local test sources are present.')
+        }
+        writeLocalTestSourceManifest()
+        logger.lifecycle('Test sources are in local development mode. Imported bundle checks remain strict in other checkouts.')
+    }
+}
+
+def verifyTestSourceBundleTask = tasks.register('verifyTestSourceBundle') {
+    group = 'verification'
+    description = 'Rejects imported test bundles from another revision or with modified test files.'
+    onlyIf('Test sources are included') { testSourcesIncluded() }
+    doLast { verifyTestSourceBundle() }
+}
+
+tasks.matching {
+    it.name in ['test', 'testBlockbenchPlugin', 'testWebEditor', 'testNetworkLifecycle',
+                'testWebEditorBrowser', 'verifyTestEnvironment', 'compileTestJava', 'compileNetworkTestJava']
+}.configureEach { dependsOn verifyTestSourceBundleTask }
+
+tasks.register('prepareNetworkTests') {
+    group = 'verification'
+    description = 'Prepares isolated Forge client and server launch specifications.'
+    dependsOn 'prepareRunHitboxPlusNetworkTestServer', 'prepareRunHitboxPlusNetworkTestServerCompile',
+            'prepareRunHitboxPlusNetworkTestClient', 'prepareRunHitboxPlusNetworkTestClientCompile'
+    doLast {
+        def specifications = [:]
+        [server: 'runHitboxPlusNetworkTestServer', client: 'runHitboxPlusNetworkTestClient'].each { side, taskName ->
+            def launch = tasks.named(taskName).get()
+            def config = launch.runConfig.get()
+            def tokens = RunConfigGenerator.configureTokensLazy(project, config,
+                    RunConfigGenerator.mapModClassesToGradle(project, config),
+                    launch.minecraftArtifacts, launch.runtimeClasspathArtifacts)
+            def jvm = config.properties.collect { key, value -> "-D${key}=${config.replace(tokens, value)}" }
+            jvm.addAll(config.jvmArgs.collect { config.replace(tokens, it) })
+            if (config.client) {
+                jvm.addAll(launch.additionalClientArgs.get().collect { config.replace(tokens, it) })
+            }
+            specifications[side] = [executable: launch.javaLauncher.get().executablePath.asFile.absolutePath,
+                    jvmArgs: jvm, mainClass: config.main,
+                    classpath: files(config.allSources.collect { it.runtimeClasspath }).asPath,
+                    args: config.args.collect { config.replace(tokens, it) },
+                    environment: config.environment.collectEntries { key, value -> [(key): config.replace(tokens, value)] }]
+        }
+        def output = layout.buildDirectory.file('network-tests/launch.json').get().asFile
+        output.parentFile.mkdirs()
+        output.setText(JsonOutput.prettyPrint(JsonOutput.toJson(specifications)), 'UTF-8')
+    }
+}
+
+tasks.register('testNetworkLifecycle', NodeTask) {
+    group = 'verification'
+    description = 'Checks profile synchronization using a connected Forge client and dedicated server.'
+    dependsOn tasks.named('prepareNetworkTests')
+    mustRunAfter tasks.named('build'), 'runHitboxPlusGameTestServer'
+    script = file('tools/testing/network.cjs')
+}
+
+def verifyTestEnvironment = tasks.register('verifyTestEnvironment', NodeTask) {
+    group = 'verification'
+    description = 'Checks that the full test sources and an isolated test browser are available.'
+    script = file('tools/testing/browser.cjs')
+    args = ['--check-browser']
+    doFirst { requireTestSources() }
+}
+
+tasks.register('testWebEditorBrowser', NodeTask) {
+    group = 'verification'
+    description = 'Runs the editor smoke checks with an isolated server and headless browser.'
+    dependsOn tasks.named('bundleWebEditor')
+    mustRunAfter 'runHitboxPlusGameTestServer'
+    mustRunAfter tasks.named('testNetworkLifecycle')
+    script = file('tools/testing/browser.cjs')
+    onlyIf('Browser test sources are included') { file('tools/web-editor/test/browser-smoke.cjs').isFile() }
+}
+
+tasks.matching {
+    it.name in ['test', 'testBlockbenchPlugin', 'testWebEditor',
+                'runHitboxPlusGameTestServer', 'testNetworkLifecycle', 'testWebEditorBrowser']
+}.configureEach { mustRunAfter verifyTestEnvironment }
+
+tasks.matching { it.name == 'runHitboxPlusGameTestServer' }.configureEach {
+    mustRunAfter tasks.named('build')
+}
+
+tasks.register('runTests') {
+    group = 'verification'
+    description = 'Builds and runs all Java, Node, dedicated-server and isolated browser checks.'
+    dependsOn verifyTestEnvironment, tasks.named('build'),
+            'runHitboxPlusGameTestServer', tasks.named('testNetworkLifecycle'), tasks.named('testWebEditorBrowser')
+    doLast {
+        logger.lifecycle('All test suites passed. Reports: build/reports/tests/test/index.html '
+                + 'and build/reports/editor-browser/.')
+    }
+}
+
+tasks.register('testSourcesZip', Zip) {
+    group = 'distribution'
+    description = 'Packages the optional local test sources and fixtures for another checkout.'
+    dependsOn 'prepareTestSourceBundle'
+    archiveFileName = "hitboxplus-test-sources-${project.version}.zip"
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    doFirst { requireTestSources() }
+    ['src/test', 'buildSrc/src/test', 'tools/blockbench/test', 'tools/web-editor/test'].each { directory ->
+        from(directory) { into directory }
+    }
+    from('docs/testing.md') { into 'docs' }
+    from file('LICENSE.txt')
+    from layout.buildDirectory.file('test-bundle/test-sources-manifest.json')
+}
+
+tasks.register('prepareTestSourceBundle') {
+    group = 'distribution'
+    description = 'Records the project revision and checksums for the versioned test-source bundle.'
+    dependsOn verifyTestSourceBundleTask
+    doLast {
+        requireTestSources()
+        def manifest = testSourceBundleSnapshot('bundle')
+        manifest.projectVersion = project.version.toString()
+        def output = layout.buildDirectory.file('test-bundle/test-sources-manifest.json').get().asFile
+        output.parentFile.mkdirs()
+        output.setText(JsonOutput.prettyPrint(JsonOutput.toJson(manifest)) + '\n', 'UTF-8')
+    }
+}
+
+tasks.register('exportVanillaHitboxProfiles', JavaExec) {
+    group = 'development'
+    description = 'Regenerates typed vanilla profiles for review; never runs during normal builds.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.detectivestudios.hitboxplus.client.hitbox.VanillaProfileExporter'
+    args file('src/main/java/com/detectivestudios/hitboxplus/profile/vanilla/v118').absolutePath,
+            file('src/main/java/com/detectivestudios/hitboxplus/profile/VanillaMobProfiles.java').absolutePath
+}
+
+tasks.register('exportHitboxPlusEditorCatalog', JavaExec) {
+    group = 'development'
+    description = 'Exports reviewed hitbox definitions and vanilla bone rigs for the editors.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.detectivestudios.hitboxplus.client.hitbox.HitboxPlusEditorCatalogExporter'
+    args file('tools/blockbench/catalog/vanilla-1.18.2.json').absolutePath
+}

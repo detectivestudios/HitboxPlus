@@ -1,0 +1,149 @@
+DETECTIVESTUDIOS SOURCE-AVAILABLE CONTRIBUTION LICENSE
+Version 1.0
+
+Copyright (c) 2026 DetectiveStudios and the respective contributors.
+All rights reserved except as expressly granted below.
+
+1. SCOPE AND DEFINITIONS
+
+This License governs the original source code, documentation, assets and other
+materials for which DetectiveStudios or a contributor has the right to grant
+the permissions below (the "Software").
+
+The "Project" means Hitbox+ by DetectiveStudios (HitboxPlus), maintained by
+DetectiveStudios. The "Official Repository" means the GitHub repository designated and maintained
+by DetectiveStudios for the Project. A "Contribution" is a change that you
+intentionally submit to that repository for inclusion in the Project.
+
+Third-party materials are governed by their respective licenses and notices.
+This License does not replace those terms or grant rights that DetectiveStudios
+or a contributor does not hold. Where both sets of terms apply, you must comply
+with both. No restriction in this License limits a right granted independently
+under a third-party license or a right that applicable law does not allow a
+licensor to restrict.
+
+Nothing in this License withdraws permissions granted independently under
+GitHub's applicable terms of service, including viewing and forking public
+repositories through GitHub's functionality.
+
+2. PERMITTED USE AND CONTRIBUTION WORK
+
+Subject to this License, you may:
+
+  a. Download, install and run official, unmodified releases of the Project.
+
+  b. Inspect the source code and make the copies needed to understand the
+     Project and prepare contributions, including local clones and backups.
+
+  c. Fork the Official Repository on GitHub and modify, build and test the
+     Software for the purpose of proposing changes through pull requests to
+     the Official Repository. A contribution fork may contain the source
+     changes needed for review, discussion and collaboration. It may not be
+     offered as an independently maintained or separately branded product.
+
+  d. Share patches, relevant code excerpts and test results through the
+     Official Repository and its associated contribution discussions.
+
+  e. Develop and distribute independently written integrations that use the
+     Project's public API, provided they do not incorporate the Project's
+     implementation code or redistribute the Software. Referring to public
+     types and calling public API methods does not, by itself, breach this
+     restriction. Use a separately obtained official release as a dependency.
+
+These permissions cover the copying and modification reasonably necessary for
+the activities above. They do not grant general permission to reuse the code.
+Public availability of the repository does not place its contents in the
+public domain.
+
+3. RESTRICTIONS
+
+Except as expressly permitted above, required by applicable law, or separately
+authorized in writing by the relevant rights holder, you may not:
+
+  a. Copy, extract, translate, adapt or incorporate the Software, in whole
+     or in part, into another project, library, mod, service or product.
+     This includes copying implementation code with changed names,
+     formatting, packaging or branding.
+
+  b. Publish, distribute, sell, sublicense or rehost the Software or modified
+     builds, or operate a public release channel for a contribution fork.
+     Distributing a modpack containing the Software requires separate
+     written permission; linking users to official releases is permitted.
+
+  c. Present the Project or another contributor's work as your own, remove
+     required attribution, or imply endorsement by DetectiveStudios.
+
+  d. Use a contribution fork to distribute a competing or independently
+     maintained version instead of contributing through the Official
+     Repository.
+
+Submission of a pull request does not authorize unrelated reuse, publication
+or distribution. These restrictions do not apply to your independently created
+material that does not incorporate protected material from the Software.
+
+4. CONTRIBUTIONS AND OWNERSHIP
+
+You retain ownership of your original contributions. Submitting a Contribution
+does not transfer your copyright to DetectiveStudios.
+
+By intentionally submitting a Contribution after this License has been adopted
+and made available in the Official Repository, you grant DetectiveStudios a
+worldwide, non-exclusive, perpetual, irrevocable, royalty-free license to use,
+reproduce, modify, combine, publicly display, distribute and sublicense that
+Contribution as part of the Project and its official releases. This grant
+includes permission to distribute the Contribution under this License or
+other license terms selected by DetectiveStudios. It applies only to rights
+you own or are authorized to grant.
+
+You confirm that you are entitled to submit the Contribution and grant these
+permissions. Identify any third-party material and its applicable license
+before submission. Do not submit material subject to incompatible obligations
+or material belonging to an employer or another rights holder without the
+necessary authorization.
+
+DetectiveStudios may accept, modify or decline any Contribution and has no
+obligation to merge a pull request, publish a release or provide compensation.
+This section does not retroactively change the terms of earlier contributions.
+
+5. NOTICES AND PROJECT IDENTITY
+
+Retain this License and all applicable copyright, attribution and third-party
+notices in every copy permitted by this License. Clearly identify your changes
+in your contribution fork and pull request.
+
+No trademark or branding rights are granted, except the limited use reasonably
+necessary to identify the Project, describe compatibility or propose a
+Contribution. Do not imply that a fork or integration is an official release.
+
+6. NO WARRANTY; LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+"AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NON-INFRINGEMENT. DETECTIVESTUDIOS AND THE CONTRIBUTORS DO NOT GUARANTEE
+THAT THE SOFTWARE WILL BE ERROR-FREE, SECURE OR AVAILABLE WITHOUT INTERRUPTION.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, DETECTIVESTUDIOS AND THE
+CONTRIBUTORS WILL NOT BE LIABLE FOR CLAIMS OR DAMAGES ARISING FROM THE
+SOFTWARE OR ITS USE, WHETHER IN CONTRACT, TORT OR OTHERWISE. THIS EXCLUSION
+DOES NOT APPLY TO LIABILITY THAT CANNOT LAWFULLY BE EXCLUDED OR LIMITED.
+
+7. TERMINATION
+
+The permissions granted to you terminate automatically if you materially
+breach this License. Upon termination, stop activities requiring those
+permissions and remove copies that you are no longer entitled to retain.
+Rights granted independently by applicable law or a third-party license
+remain unaffected. The contribution grant in section 4 and the provisions
+concerning ownership, notices, warranty and liability survive termination.
+
+8. OTHER PERMISSIONS AND LICENSE VERSIONS
+
+Rights not expressly granted are reserved by their respective holders.
+Request additional permissions through the Official Repository; permission
+must come from someone authorized to grant the relevant rights. Opening an
+issue or receiving no response does not constitute permission.
+
+Later license versions do not automatically replace the terms accompanying
+an earlier copy. Different terms require a separate grant or an express
+choice offered by the relevant rights holder.

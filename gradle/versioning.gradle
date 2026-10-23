@@ -1,0 +1,55 @@
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+def fingerprintDigest = MessageDigest.getInstance('SHA-256')
+def fingerprintFiles = files(
+        fileTree('src'),
+        file('build.gradle'),
+        file('gradle.properties'),
+        file('settings.gradle'),
+        fileTree('gradle'),
+        file('buildSrc/build.gradle'),
+        file('buildSrc/settings.gradle'),
+        fileTree('buildSrc/src')
+).files.findAll { it.isFile() }.sort { relativePath(it) }
+
+fingerprintFiles.each { inputFile ->
+    fingerprintDigest.update(relativePath(inputFile)
+            .replace('\\', '/')
+            .getBytes(StandardCharsets.UTF_8))
+    fingerprintDigest.update((byte) 0)
+    fingerprintDigest.update(inputFile.bytes)
+}
+
+def sourceFingerprint = fingerprintDigest.digest().encodeHex().toString().substring(0, 8)
+def runGit = { String... arguments ->
+    def output = new ByteArrayOutputStream()
+    def errors = new ByteArrayOutputStream()
+    def result = exec {
+        workingDir projectDir
+        commandLine(['git'] + arguments.toList())
+        standardOutput = output
+        errorOutput = errors
+        ignoreExitValue = true
+    }
+    result.exitValue == 0 ? output.toString('UTF-8').trim() : null
+}
+
+def sourceDateEpoch = System.getenv('SOURCE_DATE_EPOCH')
+def buildInstant = sourceDateEpoch
+        ? Instant.ofEpochSecond(sourceDateEpoch.toLong())
+        : Instant.now()
+def buildDate = DateTimeFormatter.ofPattern('yyyy.MM')
+        .withZone(ZoneOffset.UTC)
+        .format(buildInstant)
+def gitRevision = runGit('rev-parse', '--short=8', 'HEAD')
+def gitStatus = runGit('status', '--porcelain', '--untracked-files=normal')
+def buildRevision = gitRevision == null
+        ? "src.${sourceFingerprint}"
+        : gitStatus.isEmpty() ? gitRevision : "dev-${sourceFingerprint}"
+
+version = "${minecraft_version}-${buildDate}-${buildRevision}"
+logger.lifecycle("Hitbox+ build version: ${project.version}")

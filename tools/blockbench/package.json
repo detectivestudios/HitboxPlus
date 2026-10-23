@@ -1,0 +1,11 @@
+{
+  "name": "hitboxplus-blockbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blockbench authoring tools for Hitbox+",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node --test test/authoring.test.cjs"
+  },
+  "engines": {"node": ">=18"}
+}

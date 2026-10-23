@@ -1,0 +1,12 @@
+Hitbox+ Studio includes Three.js 0.160.1 and its OrbitControls and
+TransformControls modules under the MIT License.
+
+The detectivestudios logo was supplied by the project owner and is included unmodified.
+
+Upstream: https://github.com/mrdoob/three.js/tree/r160
+Package: https://www.npmjs.com/package/three/v/0.160.1
+Files: vendor/three.module.js, vendor/OrbitControls.js, vendor/TransformControls.js
+Full license: vendor/LICENSE-three.txt (also included in dist/vendor/).
+
+The remaining editor and profile code belongs to this repository and follows
+its LICENSE.txt. No Blockbench implementation code is bundled in this website.

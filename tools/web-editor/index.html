@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Edit Minecraft entity hitboxes locally. Import models, preview animations, and export Hitbox+ profiles or datapacks.">
+  <title>DetectiveStudios | Hitbox+ - Editor</title>
+  <meta name="author" content="DetectiveStudios">
+  <meta name="theme-color" content="#101113">
+  <link rel="icon" type="image/png" href="assets/detectivestudios.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+  <script defer src="shared.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="#" aria-label="DetectiveStudios"><img class="brand-mark" src="assets/detectivestudios.png" width="42" height="46" alt=""><span>DetectiveStudios</span></a>
+    <div class="product-lockup"><span class="brand-divider" aria-hidden="true">|</span><span>Hitbox+ - Editor</span></div>
+    <div class="privacy"><i></i> Local workspace <span>· Files stay on your device</span></div>
+    <button id="help" class="quiet" aria-label="Quick guide"><span class="help-symbol" aria-hidden="true">?</span><span class="help-label">Quick guide</span></button>
+  </header>
+  <main class="workspace">
+    <aside class="library panel" aria-label="Model library">
+      <div class="panel-title"><span>MODEL LIBRARY</span><span class="badge">1.18.2</span></div>
+      <h1>Find your<br><em>starting point.</em></h1>
+      <p class="muted intro">Choose a preset or import your entity model.</p>
+      <button class="import-button" id="import-model"><b aria-hidden="true">＋</b><span>Import model or profile<small>.geo.json · .bbmodel · .json</small></span></button>
+      <input id="model-file" type="file" accept=".json,.bbmodel,.java" hidden>
+      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find an entity…" aria-label="Search vanilla profiles"></label>
+      <div class="list-heading"><span>VANILLA PRESETS</span><span id="preset-count">92</span></div>
+      <div id="presets" class="presets" aria-label="Vanilla profiles"></div>
+      <footer class="library-footer"><div class="footer-status"><span class="dot"></span> Offline ready <span>92 presets</span></div><small class="copyright">© <span id="copyright-year">2026</span> DetectiveStudios</small></footer>
+    </aside>
+    <section class="stage" aria-label="Hitbox editor">
+      <div class="stage-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2 id="model-title">Player</h2></div><span id="save-state" class="save-state" role="status">Saved on this device</span></div>
+      <div class="viewport-shell" id="drop-zone">
+        <div class="toolbar" role="toolbar" aria-label="Viewport tools">
+          <div class="tool-group"><button data-mode="translate" class="active" title="Move (W)" aria-label="Move selected box">↔ <span>Move</span></button><button data-mode="rotate" title="Rotate (E)" aria-label="Rotate selected box">⟳ <span>Rotate</span></button><button data-mode="scale" title="Resize (R)" aria-label="Resize selected box">⤢ <span>Resize</span></button></div>
+          <div class="tool-group"><button id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button><button id="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button><button id="frame" title="Frame model (F)">Frame</button></div>
+        </div>
+        <canvas id="viewport" aria-label="Interactive 3D entity preview. Drag to orbit, scroll to zoom. Select boxes in the volume list." tabindex="0"></canvas>
+        <div class="viewport-options"><label><input id="show-reference" type="checkbox" checked> Reference</label><label><input id="show-boxes" type="checkbox" checked> Hitboxes</label><label><input id="show-bones" type="checkbox"> Bones</label><label><input id="show-grid" type="checkbox" checked> Grid</label></div>
+        <div class="viewport-caption"><span id="active-volume">HEAD</span><span title="Arrow keys move the selected box by 1 model pixel on X/Y. Shift + Up/Down moves on Z.">Drag to orbit · Arrows to move · F to frame</span></div>
+        <div id="drop-hint">Drop a model or profile to open it</div>
+        <div id="webgl-error" hidden>3D preview needs WebGL. Enable hardware acceleration or try another browser.</div>
+      </div>
+      <div class="animation-bar"><button id="play" aria-label="Play animation preview">▶</button><select id="clip" aria-label="Preview animation"><option value="">Reference pose</option></select><input id="timeline" type="range" min="0" max="1" value="0" step="0.01" aria-label="Animation time"><output id="time">0.00s</output><button id="import-animation" class="quiet">＋ Animation</button><input id="animation-file" type="file" accept=".json" hidden></div>
+      <div class="stage-footer"><span id="summary">8 volumes · 6 bones</span><span>Model pixels · 16 px = 1 block</span></div>
+    </section>
+    <aside class="inspector panel" aria-label="Profile and hitbox settings">
+      <div class="panel-title">PROFILE SETTINGS <span class="badge green">JSON v1</span></div>
+      <label class="field">Target entity<input id="entity" spellcheck="false" placeholder="mod_id:entity"></label>
+      <div class="two-fields"><label class="field">Variant<input id="variant" spellcheck="false" value="base"></label><label class="field">Pose source<select id="pose-source"><option value="provider">Entity provider</option><option value="geckolib">GeckoLib rig</option></select></label></div>
+      <p id="coverage" class="coverage"></p>
+      <details id="rig-settings"><summary>Animation adapter</summary><div class="two-fields"><label class="field">Model scale<input id="model-scale" type="number" min="0.01" max="100" step="0.01" value="1"></label><label class="field">Blend ticks<input id="blend-ticks" type="number" min="0" max="40" value="4"></label></div><div id="state-bindings"></div></details>
+      <div class="section-heading"><h3>Hitbox volumes <span id="box-count">8</span></h3><button id="add-box" class="quiet" title="Add a volume">＋ Add</button></div>
+      <div id="volumes" class="volumes" aria-label="Select a hitbox volume"></div>
+      <div class="selection-heading"><strong id="selection-name">Head</strong><div><button id="duplicate" title="Duplicate selected volume" aria-label="Duplicate selected volume">⧉</button><button id="delete" title="Delete selected volume" aria-label="Delete selected volume">×</button></div></div>
+      <div class="two-fields"><label class="field">Bone<select id="bone"></select></label><label class="field">Damage region<select id="region"></select></label></div>
+      <label class="field">Custom part ID <span class="muted">optional</span><input id="part" placeholder="my_mod:horn" spellcheck="false"></label>
+      <div id="vectors"></div>
+      <p class="coordinate-note">Coordinates are relative to the selected bone. Arrow keys move 1 px on X/Y; Shift + Up/Down moves on Z.</p>
+      <div class="export-area"><button id="export-json" class="primary">Export profile JSON <span>↗</span></button><button id="export-pack" class="secondary">Download ready-to-use datapack</button><p>Install the ZIP in <code>world/datapacks</code>, then run <code>/reload</code>.</p></div>
+    </aside>
+  </main>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="guide"><div class="dialog-heading"><h2>From model to Minecraft.</h2><button data-close="guide" aria-label="Close guide">×</button></div><ol><li><b>Open a preset or import your model.</b> GeckoLib/Bedrock geometry, cube-based Blockbench models, and Hitbox+ profiles are supported.</li><li><b>Fit the colored volumes.</b> Click a box or select it in the list. Move, rotate or resize it, then assign a bone and body region.</li><li><b>Preview the movement.</b> Import numeric GeckoLib animations and bind clips to idle, walk, sprint, attack, death or swim.</li><li><b>Export and install.</b> Put a datapack ZIP in the world's <code>datapacks</code> folder, or put JSON in <code>src/main/resources/data/your_mod/hitboxplus/profiles/</code>. Reload datapacks with <code>/reload</code>.</li></ol><p class="muted">Hitbox+ must be installed on the server and clients. GeckoLib rigs can activate through the exported profile. Custom renderer transforms, Molang and advanced animation controllers use the server adapter API. The editor never uploads your files.</p><button data-close="guide" class="primary">Start editing</button></dialog>
+  <dialog id="geometry-dialog"><h2>Choose a geometry</h2><label class="field">This file contains multiple models<select id="geometry-options"></select></label><button id="geometry-confirm" class="primary">Open model</button><button data-close="geometry-dialog" class="quiet">Cancel</button></dialog>
+</body>
+</html>
