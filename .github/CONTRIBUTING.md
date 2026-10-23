@@ -49,7 +49,7 @@ line endings. Preserve existing license headers; the formatter manages Java head
 The source checkout can build without the optional local test sources. Such a build does not
 run the absent suites; state which checks actually ran in the pull request. If you need the
 full test sources, ask a maintainer for the bundle matching your revision. Follow
-[docs/testing.md](docs/testing.md) for strict bundle compatibility and local test ownership.
+[docs/testing.md](../docs/testing.md) for strict bundle compatibility and local test ownership.
 Never change an imported bundle to local mode just to bypass a compatibility error.
 
 With matching test sources available, run the full suite:
@@ -82,7 +82,7 @@ coordinate a matching test-source bundle with the maintainer when needed.
 
 ## License and contribution rights
 
-Read the [DetectiveStudios Source-Available Contribution License](LICENSE.txt) before
+Read the [DetectiveStudios Source-Available Contribution License](../LICENSE.txt) before
 submitting. It permits contribution forks and pull requests to the official repository;
 it does not grant general redistribution or reuse rights. Contributors retain ownership
 of their original work and grant the contribution permissions described in the license.

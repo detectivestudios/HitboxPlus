@@ -10,7 +10,7 @@ Link the issue, or use `Closes #123` if this pull request resolves it.
 ## Validation
 
 List the commands or manual checks you ran and their results. Note checks you could not run
-and why. See the [contribution guide](https://github.com/detectivestudios/HitboxPlus/blob/master/CONTRIBUTING.md)
+and why. See the [contribution guide](https://github.com/detectivestudios/HitboxPlus/blob/master/.github/CONTRIBUTING.md)
 and [test workflow](https://github.com/detectivestudios/HitboxPlus/blob/master/docs/testing.md).
 
 ## Checklist

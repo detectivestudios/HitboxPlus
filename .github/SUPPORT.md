@@ -1,7 +1,9 @@
 # Getting help
 
 Start with the [README](https://github.com/detectivestudios/HitboxPlus#readme) for setup and
-public API usage. Authoring help is in the
+public API usage. Browse the
+[documentation index](https://github.com/detectivestudios/HitboxPlus/blob/master/docs/README.md)
+for API, development, and testing guides. Authoring help is in the
 [Editor guide](https://github.com/detectivestudios/HitboxPlus/blob/master/tools/web-editor/README.md)
 and [Blockbench plugin guide](https://github.com/detectivestudios/HitboxPlus/blob/master/tools/blockbench/README.md).
 
@@ -15,5 +17,5 @@ for setup and integration help. Include your exact version and enough context to
 the problem. Remove private information from logs and attachments.
 
 For code and documentation contributions, read the
-[contribution guide](https://github.com/detectivestudios/HitboxPlus/blob/master/CONTRIBUTING.md)
+[contribution guide](https://github.com/detectivestudios/HitboxPlus/blob/master/.github/CONTRIBUTING.md)
 and open a pull request against `master`.
