@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a problem with the mod, Editor, or Blockbench plugin.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before opening a report. Include a small reproduction when possible.
+        Remove passwords, access tokens, server addresses, and other private information from attachments.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - Minecraft mod
+        - Hitbox+ Editor
+        - Blockbench plugin
+        - Public API or integration
+        - Build or documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Hitbox+ version or commit
+      description: Copy the mod version, or provide the commit used for a source build or Editor.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include relevant Minecraft/Forge/Java versions, operating system, browser, Blockbench version, and other mods.
+      placeholder: Minecraft 1.18.2, Forge ..., Java 17, Windows ...; singleplayer or dedicated server ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the entity, model variant, animation, pose, or imported file when relevant. Attach a minimal model/profile if you may share it.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Screenshots or a short recording can help explain geometry and animation problems.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and crash reports
+      description: Paste relevant log output here, or attach the latest.log/crash report. For Editor problems, include browser console errors.
+      render: text

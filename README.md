@@ -147,9 +147,15 @@ to these names.
 
 ## Contribute
 
-Fork the official GitHub repository, create a branch, and submit changes through a pull request.
-Include a clear description and how you verified the change. Contributions and reuse are governed
-by the [DetectiveStudios Source-Available Contribution License](LICENSE.txt).
+[Report a bug, suggest a feature, or ask a question](https://github.com/detectivestudios/HitboxPlus/issues/new/choose).
+Search [existing issues](https://github.com/detectivestudios/HitboxPlus/issues) before opening a new one.
+Use [Discussions](https://github.com/detectivestudios/HitboxPlus/discussions) for general questions,
+ideas, and sharing your work.
+
+To contribute code or documentation, fork the repository and open a pull request against `master`.
+Read the [contribution guide](CONTRIBUTING.md) for setup, validation, and the review process.
+Contributions and reuse are governed by the
+[DetectiveStudios Source-Available Contribution License](LICENSE.txt).
 
 Before submitting, run:
 

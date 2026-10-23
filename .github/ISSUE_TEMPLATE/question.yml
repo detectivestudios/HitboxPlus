@@ -1,0 +1,28 @@
+name: Question or integration help
+description: Ask about setup, authoring, or integrating the public API.
+title: "[Question]: "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the README and Editor guide first, and search existing issues for similar questions.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Describe what you are trying to do and where you are stuck.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Versions and context
+      description: Include the Hitbox+ version and relevant Minecraft/Forge, browser, or Blockbench versions. Code examples and minimal profiles are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+      description: Link relevant documentation and describe the result.

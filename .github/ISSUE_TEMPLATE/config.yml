@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community discussions
+    url: https://github.com/detectivestudios/HitboxPlus/discussions
+    about: Ask general questions, discuss ideas, and share what you are building.
+  - name: Documentation and setup
+    url: https://github.com/detectivestudios/HitboxPlus#readme
+    about: Read installation, API, build, and authoring instructions.
+  - name: Hitbox+ Editor guide
+    url: https://github.com/detectivestudios/HitboxPlus/blob/master/tools/web-editor/README.md
+    about: Learn how to import models, edit hitboxes, preview animations, and export profiles.
