@@ -1,11 +1,11 @@
 @echo off
 setlocal DisableDelayedExpansion
-set "studioPage=%~dp0dist\hitboxplus-studio.html"
-if exist "%~dp0hitboxplus-studio.html" set "studioPage=%~dp0hitboxplus-studio.html"
-if exist "%studioPage%" goto openStudio
+set "editorPage=%~dp0dist\hitboxplus-editor.html"
+if exist "%~dp0hitboxplus-editor.html" set "editorPage=%~dp0hitboxplus-editor.html"
+if exist "%editorPage%" goto openEditor
 
 if not exist "%~dp0build.cjs" (
-  echo Editor files are missing. Extract the complete Hitbox+ Studio ZIP again.
+  echo Editor files are missing. Extract the complete Hitbox+ Editor ZIP again.
   pause
   exit /b 1
 )
@@ -19,16 +19,16 @@ if errorlevel 1 (
   exit /b 1
 )
 
-:openStudio
-start "" "%studioPage%"
+:openEditor
+start "" "%editorPage%"
 exit /b %errorlevel%
 
 :buildFromProject
 if not exist "%~dp0..\..\gradlew.bat" (
-  echo Editor files are missing. Extract the complete Hitbox+ Studio ZIP again.
+  echo Editor files are missing. Extract the complete Hitbox+ Editor ZIP again.
   pause
   exit /b 1
 )
 call "%~dp0..\..\gradlew.bat" -p "%~dp0..\.." bundleWebEditor --console=plain
 if errorlevel 1 exit /b %errorlevel%
-goto openStudio
+goto openEditor

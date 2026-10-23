@@ -42,5 +42,5 @@ const singleFile = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8')
   .replace('<script type="module" src="app.js"></script>', '<script type="module">\n' + inline(app) + '\n</script>')
   .replace('<!doctype html>', '<!doctype html>\n<!--\n' + projectLicense + '\n\nThree.js license:\n'
     + fs.readFileSync(path.join(__dirname, 'vendor/LICENSE-three.txt'), 'utf8') + '\n-->');
-fs.writeFileSync(path.join(output, 'hitboxplus-studio.html'), singleFile);
-console.log('Built Hitbox+ Studio: ' + catalog.profiles.length + ' presets, all assets local.');
+fs.writeFileSync(path.join(output, 'hitboxplus-editor.html'), singleFile);
+console.log('Built Hitbox+ Editor: ' + catalog.profiles.length + ' presets, all assets local.');

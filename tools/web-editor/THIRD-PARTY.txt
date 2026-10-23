@@ -1,4 +1,4 @@
-Hitbox+ Studio includes Three.js 0.160.1 and its OrbitControls and
+Hitbox+ Editor includes Three.js 0.160.1 and its OrbitControls and
 TransformControls modules under the MIT License.
 
 The detectivestudios logo was supplied by the project owner and is included unmodified.

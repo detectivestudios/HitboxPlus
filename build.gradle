@@ -178,7 +178,7 @@ tasks.register('testWebEditor', NodeTask) {
 
 tasks.register('bundleWebEditor', NodeTask) {
     group = 'build'
-    description = 'Builds the offline Hitbox+ Studio browser editor.'
+    description = 'Builds the offline Hitbox+ Editor.'
     script = file('tools/web-editor/build.cjs')
     inputs.files file('tools/web-editor/index.html'), file('tools/web-editor/style.css'),
             file('tools/web-editor/app.js'), file('tools/web-editor/model.cjs'),
@@ -191,7 +191,7 @@ tasks.register('bundleWebEditor', NodeTask) {
 
 tasks.register('runEditor', NodeTask) {
     group = 'ForgeGradle runs'
-    description = 'Builds and opens Hitbox+ Studio using the project-managed Node.js runtime.'
+    description = 'Builds and opens Hitbox+ Editor using the project-managed Node.js runtime.'
     dependsOn tasks.named('bundleWebEditor')
     script = file('tools/web-editor/server.cjs')
     args = ['--open', '--port', providers.gradleProperty('editorPort').getOrElse('8787')]
@@ -199,15 +199,15 @@ tasks.register('runEditor', NodeTask) {
 
 tasks.register('editorZip', Zip) {
     group = 'distribution'
-    description = 'Packages Hitbox+ Studio for local use or static hosting.'
+    description = 'Packages Hitbox+ Editor for local use or static hosting.'
     dependsOn tasks.named('bundleWebEditor')
-    archiveFileName = 'hitboxplus-studio.zip'
+    archiveFileName = 'hitboxplus-editor.zip'
     destinationDirectory = layout.buildDirectory.dir('distributions')
     from('tools/web-editor/dist') {
         into 'dist'
-        exclude 'hitboxplus-studio.html'
+        exclude 'hitboxplus-editor.html'
     }
-    from('tools/web-editor/dist') { include 'hitboxplus-studio.html' }
+    from('tools/web-editor/dist') { include 'hitboxplus-editor.html' }
     from('tools/web-editor') { include 'server.cjs', 'start-editor.cmd', 'README.md', 'THIRD-PARTY.txt' }
     from file('LICENSE.txt')
 }

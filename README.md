@@ -101,7 +101,7 @@ Run the local editor from the project root:
 .\runEditor
 ```
 
-[Hitbox+ Studio](tools/web-editor/README.md) imports models and animations, previews volumes,
+[Hitbox+ Editor](tools/web-editor/README.md) imports models and animations, previews volumes,
 and exports profiles or ready-to-install datapacks. A [Blockbench plugin](tools/blockbench/README.md)
 is also available.
 

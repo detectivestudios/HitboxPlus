@@ -33,7 +33,7 @@ server.on('error', async error => {
     try {
       const response = await fetch(url + '/index.html', {signal: AbortSignal.timeout(2000)});
       if (response.status === 200 && await response.text() === fs.readFileSync(path.join(root, 'index.html'), 'utf8')) {
-        console.log('Hitbox+ Studio is already running: ' + url);
+        console.log('Hitbox+ Editor is already running: ' + url);
         openBrowser();
         return;
       }
@@ -43,7 +43,7 @@ server.on('error', async error => {
   process.exitCode = 1;
 });
 server.listen(port, '127.0.0.1', () => {
-  console.log('Hitbox+ Studio: ' + url + '\nFiles stay in your browser. Press Ctrl+C to stop.');
+  console.log('Hitbox+ Editor: ' + url + '\nFiles stay in your browser. Press Ctrl+C to stop.');
   openBrowser();
 });
 

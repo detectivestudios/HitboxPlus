@@ -33,7 +33,7 @@ All vanilla living-model catalog types have live runtime providers; the
 Importing a custom GeckoLib model supplies shape data;
 its mod still needs a server-compatible animated bone provider before those boxes can activate.
 
-For automatic numeric GeckoLib rigs, use [Hitbox+ Studio](../web-editor/README.md) to import
+For automatic numeric GeckoLib rigs, use [Hitbox+ Editor](../web-editor/README.md) to import
 the geometry and animations, bind states, and export the rig-enabled profile. This plugin preserves
 that profile's adapter metadata when importing, editing and re-exporting it. Generic source-model
 adoption alone still requires a compatible provider or an explicit rig definition.

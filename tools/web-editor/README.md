@@ -1,4 +1,4 @@
-# Hitbox+ Studio
+# Hitbox+ Editor
 
 A local browser editor for Minecraft entity hitboxes. Choose a vanilla preset, import a model,
 fit the colored volumes, preview animations, then download a profile or an installable datapack.
@@ -28,7 +28,7 @@ does not open automatically, use the URL printed in the terminal. For a differen
 `.\runEditor --port 8788`.
 Launching again reopens the existing editor when the same project is already serving that port.
 
-For the easiest start, double-click **`hitboxplus-studio.html`** in the extracted editor ZIP.
+For the easiest start, double-click **`hitboxplus-editor.html`** in the extracted editor ZIP.
 It includes the entire editor and works offline in a modern browser, without installing Node or
 running a web server. In a source checkout, the generated file is under `dist/`.
 
@@ -46,7 +46,7 @@ if `dist` is missing. In the repository, rebuild with `.\gradlew.bat bundleWebEd
 run both authoring test suites with `.\gradlew.bat testBlockbenchPlugin testWebEditor`.
 Direct `node build.cjs` also works if you already have Node installed.
 
-The repository also builds a portable `build/distributions/hitboxplus-studio.zip`.
+The repository also builds a portable `build/distributions/hitboxplus-editor.zip`.
 Extract it and open its HTML file, or run its launcher/server command. The included `dist` folder can be hosted on
 any ordinary static web server to share the editor. This task creates the local website and ZIP;
 it does not deploy a public instance.
