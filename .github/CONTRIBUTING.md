@@ -30,6 +30,8 @@ For crashes, attach the relevant log or crash report after removing private info
 Small fixes can go directly to a pull request. Draft pull requests are welcome for work in
 progress. Maintainers may request revisions before merging.
 
+Follow the [commit message format](../docs/commit-messages.md) when preparing commits.
+
 ## Build and validate
 
 Hitbox+ targets Forge 1.18.2 and Java 17. Run Gradle and the formatter with JDK 21; the mod

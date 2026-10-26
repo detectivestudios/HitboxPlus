@@ -12,6 +12,8 @@
 
 package com.detectivestudios.hitboxplus.runtime;
 
+import com.detectivestudios.hitboxplus.api.BodyEntityHitResult;
+import com.detectivestudios.hitboxplus.api.BodyHit;
 import com.detectivestudios.hitboxplus.api.HitboxPlus;
 import com.detectivestudios.hitboxplus.client.HitboxClient;
 import com.detectivestudios.hitboxplus.math.Vector3;
@@ -53,12 +55,15 @@ public class EntityBodyTargeting {
     var rayEnd = new Vector3(end.x, end.y, end.z);
     for (Entity candidate : candidates) {
       Optional<Vec3> contact;
+      BodyHit bodyHit = null;
       var pose = HitboxPlus.getPose(candidate, partialTick);
       if (pose.isPresent()) {
+        var hit = this.tracer.trace(pose.orElseThrow(), rayStart, rayEnd, 0.0D);
+        bodyHit = hit.orElse(null);
         contact =
-            this.tracer
-                .trace(pose.orElseThrow(), rayStart, rayEnd, 0.0D)
-                .map(hit -> new Vec3(hit.position().x(), hit.position().y(), hit.position().z()));
+            hit.map(
+                result ->
+                    new Vec3(result.position().x(), result.position().y(), result.position().z()));
       } else {
         double padding = checkVehicle ? candidate.getPickRadius() : nonPlayerInflation;
         AABB box = candidate.getBoundingBox().inflate(padding);
@@ -77,7 +82,10 @@ public class EntityBodyTargeting {
         continue;
       }
       if (squared < distance || (squared == 0.0D && distance >= 0.0D)) {
-        nearest = new EntityHitResult(candidate, point);
+        nearest =
+            bodyHit == null
+                ? new EntityHitResult(candidate, point)
+                : new BodyEntityHitResult(candidate, bodyHit);
         distance = squared;
       }
     }

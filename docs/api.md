@@ -12,6 +12,11 @@ miss, including gaps between body parts. Custom projectile engines must call the
 their collision code. The caller handles block occlusion, nearest-target selection and damage
 on the server. `BodyHit` identifies the contacted part and region.
 
+Native `ProjectileUtil` queries return `BodyEntityHitResult` for Hitbox+ contacts.
+Its `getBodyHit()` retains the part identity, surface normal and segment fraction; ordinary
+unsupported-entity hits retain vanilla `EntityHitResult`. Consuming mods can inspect the
+confirmed body region without tracing the same segment again.
+
 Register custom providers on your **mod event bus** during `RegisterHitboxProvidersEvent`:
 
 ```java
